@@ -1,44 +1,58 @@
 from functools import singledispatch, singledispatchmethod
 
-# Singledispatch: globalna funkcja do logowania zdarzeń
 @singledispatch
 def log_event(event):
     raise NotImplementedError(f"Brak implementacji dla typu: {type(event)}")
 
-# Napisz obsluge zdarzen str
+@log_event.register
+def _(event: str):
+    print(f"[log_event] Obsługa zdarzenia str: {event}")
 
-# Napisz obsluge zdarzen int
+@log_event.register
+def _(event: int):
+    print(f"[log_event] Obsługa zdarzenia int: {event}")
 
-# Napisz obsluge zdarzen typu dict
+# Obsługa zdarzeń typu dict
+@log_event.register
+def _(event: dict):
+    print(f"[log_event] Obsługa zdarzenia dict: {event}")
 
 
-# Klasa z metodą używającą singledispatchmethod
 class EventHandler:
     def __init__(self):
-        self.event_count = 0 # uwaga: licznik powiekszac o +1 przy kazdej rejestracji
-
+        self.event_count = 0
     @singledispatchmethod
     def handle_event(self, event):
         """Domyślna obsługa zdarzeń"""
         raise NotImplementedError(f"Nieobsługiwany typ zdarzenia: {type(event)}")
 
+    @handle_event.register
+    def _(self, event: str):
+        self.event_count += 1
+        print(f"[EventHandler] Obsługa zdarzenia str: {event}")
 
-    # Napisz obsluge zdarzen str, pamietaj: self.event_count += 1
+    @handle_event.register
+    def _(self, event: int):
+        self.event_count += 1
+        print(f"[EventHandler] Obsługa zdarzenia int: {event}")
 
-    # Napisz obsluge zdarzen int
+    @handle_event.register
+    def _(self, event: list):
+        self.event_count += 1
+        print(f"[EventHandler] Obsługa zdarzenia list: {event}")
 
-    # Napisz obsluge zdarzen list
 
-
-# Klasa pochodna z nowymi rejestracjami typów
 class DerivedHandler(EventHandler):
 
-    # Napisz obsluge zdarzen int
+    @EventHandler.handle_event.register
+    def _(self, event: int):
+        self.event_count += 1
+        print(f"[DerivedHandler] Obsługa zdarzenia int: {event}")
 
-    # Napisz obsluge zdarzen float
-
-
-
+    @EventHandler.handle_event.register
+    def _(self, event: float):
+        self.event_count += 1
+        print(f"[DerivedHandler] Obsługa zdarzenia float: {event}")
 
 
 # Demonstracja użycia
